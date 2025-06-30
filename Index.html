@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Stop Matemático</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f7;
+      padding: 30px;
+      text-align: center;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .reglas, .puntajes {
+      background: #ffffff;
+      border: 2px solid #bdc3c7;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 700px;
+      text-align: left;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    .cuadros {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px;
+    }
+    .cuadro {
+      font-size: 50px;
+      font-weight: bold;
+      border: 3px solid #2c3e50;
+      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      line-height: 80px;
+      background: #ecf0f1;
+      color: #2c3e50;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 8px 5px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #imagen {
+      margin-top: 20px;
+    }
+    #temporizador {
+      font-size: 24px;
+      margin: 10px;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td, th {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    tr.ganador {
+      background-color: #d4efdf;
+    }
+    tr.penalizado {
+      background-color: #f9e79f;
+    }
+    input[type="number"] {
+      padding: 5px;
+      width: 60px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Stop Matemático</h1>
+
+  <div class="reglas">
+    <h3>Reglas del Concurso</h3>
+    <ul>
+      <li>Haz clic en <strong>Girar</strong> para generar un ejercicio aleatorio.</li>
+      <li>El primer equipo en responder correctamente gana 1 punto.</li>
+      <li>Una respuesta incorrecta suma 1 error al equipo.</li>
+      <li>Al acumular 3 errores, el equipo pierde 1 punto (sí puede quedar con puntaje negativo) y sus errores se reinician.</li>
+      <li>El temporizador de 5 minutos comienza al mostrar la imagen.</li>
+      <li>Puedes pausar o reanudar el temporizador en cualquier momento.</li>
+    </ul>
+  </div>
+
+  <div>
+    <label for="numEquipos">Número de equipos:</label>
+    <input type="number" id="numEquipos" value="2" min="1" max="10">
+    <button onclick="inicializarPuntajes()">Iniciar Puntajes</button>
+  </div>
+
+  <div class="cuadros">
+    <div id="cuadro1" class="cuadro">-</div>
+    <div id="cuadro2" class="cuadro">-</div>
+    <div id="cuadro3" class="cuadro">-</div>
+  </div>
+
+  <button onclick="girar()">Girar</button>
+  <button onclick="mostrarImagen()">Mostrar Imagen</button>
+  <button onclick="pausarReanudarTemporizador()">Pausar/Reanudar</button>
+
+  <div id="imagen"></div>
+  <div id="temporizador">Temporizador: 05:00</div>
+
+  <div class="puntajes">
+    <h3>Puntajes</h3>
+    <table id="tablaPuntajes">
+      <!-- Se llenará con JavaScript -->
+    </table>
+  </div>
+
+  <script>
+    const letras1 = ['A', 'P', 'D', 'I'];
+    const letras2 = ['F', 'M', 'D'];
+    const letras3 = ['1', '2', '3'];
+
+    let codigo = ['-', '-', '-'];
+    let temporizador;
+    let tiempoRestante = 300;
+    let pausado = false;
+
+    let equipos = [];
+
+    function inicializarPuntajes() {
+      const num = parseInt(document.getElementById('numEquipos').value);
+      equipos = [];
+      for (let i = 1; i <= num; i++) {
+        equipos.push({ nombre: `Equipo ${i}`, puntos: 0, errores: 0 });
+      }
+      actualizarTablaPuntajes();
+    }
+
+    function actualizarTablaPuntajes() {
+      const tabla = document.getElementById('tablaPuntajes');
+      tabla.innerHTML = `
+        <tr>
+          <th>Equipo</th>
+          <th>Puntos</th>
+          <th>Errores</th>
+          <th>Acción</th>
+        </tr>`;
+      equipos.forEach((eq, idx) => {
+        let clase = "";
+        if (eq.errores >= 2) clase = "penalizado";
+        if (eq.puntos > 0 && eq.errores === 0) clase = "ganador";
+
+        tabla.innerHTML += `
+          <tr class="${clase}">
+            <td>${eq.nombre}</td>
+            <td>${eq.puntos}</td>
+            <td>${eq.errores}</td>
+            <td>
+              <button onclick="equipoCorrecto(${idx})">✔</button>
+              <button onclick="equipoIncorrecto(${idx})">✘</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function equipoCorrecto(index) {
+      equipos[index].puntos += 1;
+      actualizarTablaPuntajes();
+      alert(`${equipos[index].nombre} ha ganado esta ronda.`);
+      clearInterval(temporizador);
+    }
+
+    function equipoIncorrecto(index) {
+      equipos[index].errores += 1;
+      if (equipos[index].errores >= 3) {
+        equipos[index].puntos -= 1; // ahora sí puede ser negativo
+        equipos[index].errores = 0;
+        alert(`${equipos[index].nombre} ha acumulado 3 errores. Pierde 1 punto.`);
+      }
+      actualizarTablaPuntajes();
+    }
+
+    function girar() {
+      codigo[0] = letras1[Math.floor(Math.random() * letras1.length)];
+      codigo[1] = letras2[Math.floor(Math.random() * letras2.length)];
+      codigo[2] = letras3[Math.floor(Math.random() * letras3.length)];
+      document.getElementById('cuadro1').textContent = codigo[0];
+      document.getElementById('cuadro2').textContent = codigo[1];
+      document.getElementById('cuadro3').textContent = codigo[2];
+      document.getElementById('imagen').innerHTML = '';
+      clearInterval(temporizador);
+      actualizarTemporizador(300);
+    }
+
+    function mostrarImagen() {
+      const nombre = codigo.join('');
+      document.getElementById('imagen').innerHTML = `<img src="${nombre}.png" alt="${nombre}" style="max-width: 400px;">`;
+      iniciarTemporizador();
+    }
+
+    function iniciarTemporizador() {
+      tiempoRestante = 300;
+      pausado = false;
+      clearInterval(temporizador);
+      temporizador = setInterval(() => {
+        if (!pausado) {
+          tiempoRestante--;
+          actualizarTemporizador(tiempoRestante);
+          if (tiempoRestante <= 0) {
+            clearInterval(temporizador);
+            document.getElementById('temporizador').textContent = '¡Tiempo terminado!';
+          }
+        }
+      }, 1000);
+    }
+
+    function pausarReanudarTemporizador() {
+      if (tiempoRestante > 0) {
+        pausado = !pausado;
+        const texto = pausado ? '⏸ Pausado' : `Temporizador: ${formatoTiempo(tiempoRestante)}`;
+        document.getElementById('temporizador').textContent = texto;
+      }
+    }
+
+    function actualizarTemporizador(segundos) {
+      if (segundos >= 0) {
+        document.getElementById('temporizador').textContent = `Temporizador: ${formatoTiempo(segundos)}`;
+      }
+    }
+
+    function formatoTiempo(segundos) {
+      const min = Math.floor(segundos / 60);
+      const sec = segundos % 60;
+      return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+  </script>
+
+</body>
+</html>
