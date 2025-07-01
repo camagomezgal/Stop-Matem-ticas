@@ -20,7 +20,7 @@
       border-radius: 10px;
       padding: 20px;
       margin: 20px auto;
-      max-width: 700px;
+      max-width: 800px;
       text-align: left;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
@@ -87,165 +87,181 @@
 </head>
 <body>
 
-  <h1>Stop Matemático</h1>
+<h1>Stop Matemático</h1>
 
-  <div class="reglas">
-    <h3>Reglas del Concurso</h3>
-    <ul>
-      <li>Haz clic en <strong>Girar</strong> para generar un ejercicio aleatorio.</li>
-      <li>El primer equipo en responder correctamente gana 1 punto.</li>
-      <li>Una respuesta incorrecta suma 1 error al equipo.</li>
-      <li>Al acumular 3 errores, el equipo pierde 1 punto (sí puede quedar con puntaje negativo) y sus errores se reinician.</li>
-      <li>El temporizador de 5 minutos comienza al mostrar la imagen.</li>
-      <li>Puedes pausar o reanudar el temporizador en cualquier momento.</li>
-    </ul>
-  </div>
+<div class="reglas">
+  <h3>Reglas del Concurso</h3>
+  <ul>
+    <li>Cada ronda se inicia presionando el botón <strong>Girar</strong>, que selecciona aleatoriamente un ejercicio.</li>
+    <li>Las letras indican el tipo de ejercicio:
+      <ul>
+        <li><strong>A</strong>: Álgebra</li>
+        <li><strong>P</strong>: Precálculo</li>
+        <li><strong>D</strong>: Cálculo diferencial</li>
+        <li><strong>I</strong>: Cálculo integral</li>
+        <li><strong>F</strong>: Fácil (4 minutos)</li>
+        <li><strong>M</strong>: Medio (6 minutos)</li>
+        <li><strong>D</strong>: Difícil (7 minutos)</li>
+      </ul>
+    </li>
+    <li>Al hacer clic en <strong>Mostrar Imagen</strong>, aparece el ejercicio y se inicia el temporizador según la dificultad.</li>
+    <li>El primer equipo en responder correctamente gana <strong>+1 punto</strong>.</li>
+    <li>Si un equipo responde incorrectamente, acumula 1 error.</li>
+    <li>Al llegar a 3 errores, el equipo pierde <strong>1 punto</strong> (el puntaje puede ser negativo) y los errores se reinician.</li>
+    <li>El temporizador puede pausarse o reanudarse en cualquier momento.</li>
+  </ul>
+</div>
 
-  <div>
-    <label for="numEquipos">Número de equipos:</label>
-    <input type="number" id="numEquipos" value="2" min="1" max="10">
-    <button onclick="inicializarPuntajes()">Iniciar Puntajes</button>
-  </div>
+<div>
+  <label for="numEquipos">Número de equipos:</label>
+  <input type="number" id="numEquipos" value="2" min="1" max="10">
+  <button onclick="inicializarPuntajes()">Iniciar Puntajes</button>
+</div>
 
-  <div class="cuadros">
-    <div id="cuadro1" class="cuadro">-</div>
-    <div id="cuadro2" class="cuadro">-</div>
-    <div id="cuadro3" class="cuadro">-</div>
-  </div>
+<div class="cuadros">
+  <div id="cuadro1" class="cuadro">-</div>
+  <div id="cuadro2" class="cuadro">-</div>
+  <div id="cuadro3" class="cuadro">-</div>
+</div>
 
-  <button onclick="girar()">Girar</button>
-  <button onclick="mostrarImagen()">Mostrar Imagen</button>
-  <button onclick="pausarReanudarTemporizador()">Pausar/Reanudar</button>
+<button onclick="girar()">Girar</button>
+<button onclick="mostrarImagen()">Mostrar Imagen</button>
+<button onclick="pausarReanudarTemporizador()">Pausar/Reanudar</button>
 
-  <div id="imagen"></div>
-  <div id="temporizador">Temporizador: 05:00</div>
+<div id="imagen"></div>
+<div id="temporizador">Temporizador: 00:00</div>
 
-  <div class="puntajes">
-    <h3>Puntajes</h3>
-    <table id="tablaPuntajes">
-      <!-- Se llenará con JavaScript -->
-    </table>
-  </div>
+<div class="puntajes">
+  <h3>Puntajes</h3>
+  <table id="tablaPuntajes"></table>
+</div>
 
-  <script>
-    const letras1 = ['A', 'P', 'D', 'I'];
-    const letras2 = ['F', 'M', 'D'];
-    const letras3 = ['1', '2', '3'];
+<script>
+  const letras1 = ['A', 'P', 'D', 'I'];
+  const letras2 = ['F', 'M', 'D'];
+  const letras3 = ['1', '2', '3'];
 
-    let codigo = ['-', '-', '-'];
-    let temporizador;
-    let tiempoRestante = 300;
-    let pausado = false;
+  let codigo = ['-', '-', '-'];
+  let temporizador;
+  let tiempoRestante = 300;
+  let pausado = false;
 
-    let equipos = [];
+  let equipos = [];
 
-    function inicializarPuntajes() {
-      const num = parseInt(document.getElementById('numEquipos').value);
-      equipos = [];
-      for (let i = 1; i <= num; i++) {
-        equipos.push({ nombre: `Equipo ${i}`, puntos: 0, errores: 0 });
-      }
-      actualizarTablaPuntajes();
+  function inicializarPuntajes() {
+    const num = parseInt(document.getElementById('numEquipos').value);
+    equipos = [];
+    for (let i = 1; i <= num; i++) {
+      equipos.push({ nombre: `Equipo ${i}`, puntos: 0, errores: 0 });
     }
+    actualizarTablaPuntajes();
+  }
 
-    function actualizarTablaPuntajes() {
-      const tabla = document.getElementById('tablaPuntajes');
-      tabla.innerHTML = `
-        <tr>
-          <th>Equipo</th>
-          <th>Puntos</th>
-          <th>Errores</th>
-          <th>Acción</th>
+  function actualizarTablaPuntajes() {
+    const tabla = document.getElementById('tablaPuntajes');
+    tabla.innerHTML = `
+      <tr>
+        <th>Equipo</th>
+        <th>Puntos</th>
+        <th>Errores</th>
+        <th>Acción</th>
+      </tr>`;
+    equipos.forEach((eq, idx) => {
+      let clase = "";
+      if (eq.errores >= 2) clase = "penalizado";
+      if (eq.puntos > 0 && eq.errores === 0) clase = "ganador";
+
+      tabla.innerHTML += `
+        <tr class="${clase}">
+          <td>${eq.nombre}</td>
+          <td>${eq.puntos}</td>
+          <td>${eq.errores}</td>
+          <td>
+            <button onclick="equipoCorrecto(${idx})">✔</button>
+            <button onclick="equipoIncorrecto(${idx})">✘</button>
+          </td>
         </tr>`;
-      equipos.forEach((eq, idx) => {
-        let clase = "";
-        if (eq.errores >= 2) clase = "penalizado";
-        if (eq.puntos > 0 && eq.errores === 0) clase = "ganador";
+    });
+  }
 
-        tabla.innerHTML += `
-          <tr class="${clase}">
-            <td>${eq.nombre}</td>
-            <td>${eq.puntos}</td>
-            <td>${eq.errores}</td>
-            <td>
-              <button onclick="equipoCorrecto(${idx})">✔</button>
-              <button onclick="equipoIncorrecto(${idx})">✘</button>
-            </td>
-          </tr>`;
-      });
+  function equipoCorrecto(index) {
+    equipos[index].puntos += 1;
+    actualizarTablaPuntajes();
+    alert(`${equipos[index].nombre} ha ganado esta ronda.`);
+    clearInterval(temporizador);
+  }
+
+  function equipoIncorrecto(index) {
+    equipos[index].errores += 1;
+    if (equipos[index].errores >= 3) {
+      equipos[index].puntos -= 1;
+      equipos[index].errores = 0;
+      alert(`${equipos[index].nombre} ha acumulado 3 errores. Pierde 1 punto.`);
     }
+    actualizarTablaPuntajes();
+  }
 
-    function equipoCorrecto(index) {
-      equipos[index].puntos += 1;
-      actualizarTablaPuntajes();
-      alert(`${equipos[index].nombre} ha ganado esta ronda.`);
-      clearInterval(temporizador);
-    }
+  function girar() {
+    codigo[0] = letras1[Math.floor(Math.random() * letras1.length)];
+    codigo[1] = letras2[Math.floor(Math.random() * letras2.length)];
+    codigo[2] = letras3[Math.floor(Math.random() * letras3.length)];
+    document.getElementById('cuadro1').textContent = codigo[0];
+    document.getElementById('cuadro2').textContent = codigo[1];
+    document.getElementById('cuadro3').textContent = codigo[2];
+    document.getElementById('imagen').innerHTML = '';
+    clearInterval(temporizador);
+    actualizarTemporizador(0);
+  }
 
-    function equipoIncorrecto(index) {
-      equipos[index].errores += 1;
-      if (equipos[index].errores >= 3) {
-        equipos[index].puntos -= 1; // ahora sí puede ser negativo
-        equipos[index].errores = 0;
-        alert(`${equipos[index].nombre} ha acumulado 3 errores. Pierde 1 punto.`);
-      }
-      actualizarTablaPuntajes();
-    }
+  function mostrarImagen() {
+    const nombre = codigo.join('');
+    document.getElementById('imagen').innerHTML = `<img src="${nombre}.png" alt="${nombre}" style="max-width: 400px;">`;
 
-    function girar() {
-      codigo[0] = letras1[Math.floor(Math.random() * letras1.length)];
-      codigo[1] = letras2[Math.floor(Math.random() * letras2.length)];
-      codigo[2] = letras3[Math.floor(Math.random() * letras3.length)];
-      document.getElementById('cuadro1').textContent = codigo[0];
-      document.getElementById('cuadro2').textContent = codigo[1];
-      document.getElementById('cuadro3').textContent = codigo[2];
-      document.getElementById('imagen').innerHTML = '';
-      clearInterval(temporizador);
-      actualizarTemporizador(300);
-    }
+    let dificultad = codigo[1];
+    if (dificultad === 'F') tiempoRestante = 240;
+    else if (dificultad === 'M') tiempoRestante = 360;
+    else if (dificultad === 'D') tiempoRestante = 420;
+    else tiempoRestante = 300;
 
-    function mostrarImagen() {
-      const nombre = codigo.join('');
-      document.getElementById('imagen').innerHTML = `<img src="${nombre}.png" alt="${nombre}" style="max-width: 400px;">`;
-      iniciarTemporizador();
-    }
+    iniciarTemporizador();
+  }
 
-    function iniciarTemporizador() {
-      tiempoRestante = 300;
-      pausado = false;
-      clearInterval(temporizador);
-      temporizador = setInterval(() => {
-        if (!pausado) {
-          tiempoRestante--;
-          actualizarTemporizador(tiempoRestante);
-          if (tiempoRestante <= 0) {
-            clearInterval(temporizador);
-            document.getElementById('temporizador').textContent = '¡Tiempo terminado!';
-          }
+  function iniciarTemporizador() {
+    pausado = false;
+    clearInterval(temporizador);
+    actualizarTemporizador(tiempoRestante);
+    temporizador = setInterval(() => {
+      if (!pausado) {
+        tiempoRestante--;
+        actualizarTemporizador(tiempoRestante);
+        if (tiempoRestante <= 0) {
+          clearInterval(temporizador);
+          document.getElementById('temporizador').textContent = '¡Tiempo terminado!';
         }
-      }, 1000);
-    }
-
-    function pausarReanudarTemporizador() {
-      if (tiempoRestante > 0) {
-        pausado = !pausado;
-        const texto = pausado ? '⏸ Pausado' : `Temporizador: ${formatoTiempo(tiempoRestante)}`;
-        document.getElementById('temporizador').textContent = texto;
       }
-    }
+    }, 1000);
+  }
 
-    function actualizarTemporizador(segundos) {
-      if (segundos >= 0) {
-        document.getElementById('temporizador').textContent = `Temporizador: ${formatoTiempo(segundos)}`;
-      }
+  function pausarReanudarTemporizador() {
+    if (tiempoRestante > 0) {
+      pausado = !pausado;
+      const texto = pausado ? '⏸ Pausado' : `Temporizador: ${formatoTiempo(tiempoRestante)}`;
+      document.getElementById('temporizador').textContent = texto;
     }
+  }
 
-    function formatoTiempo(segundos) {
-      const min = Math.floor(segundos / 60);
-      const sec = segundos % 60;
-      return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  function actualizarTemporizador(segundos) {
+    if (segundos >= 0) {
+      document.getElementById('temporizador').textContent = `Temporizador: ${formatoTiempo(segundos)}`;
     }
-  </script>
+  }
+
+  function formatoTiempo(segundos) {
+    const min = Math.floor(segundos / 60);
+    const sec = segundos % 60;
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+</script>
 
 </body>
 </html>
